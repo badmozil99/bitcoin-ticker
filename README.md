@@ -1,4 +1,4 @@
-# BMI Calculator
+# bitcoin ticker
 
 A new Flutter project.
 
