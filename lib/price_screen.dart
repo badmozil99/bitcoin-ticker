@@ -1,11 +1,113 @@
+
+
+import 'package:bitcoin_ticker/coin_data.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'dart:io' show Platform;
+
+import 'coin_data.dart';
 
 class PriceScreen extends StatefulWidget {
+
   @override
   _PriceScreenState createState() => _PriceScreenState();
 }
 
 class _PriceScreenState extends State<PriceScreen> {
+
+  String selectedCurrency = 'USD';
+
+
+  DropdownButton androidDropdown(){
+    List<DropdownMenuItem<String>> dropdownItems = [];
+    for(String currency in currenciesList){
+      var newItem = DropdownMenuItem(
+        child: Text(currency),
+        value: currency,
+      );
+      dropdownItems.add(newItem);
+    }
+       return DropdownButton<String>(value: selectedCurrency,
+        items: dropdownItems,
+        onChanged:(value){setState((){
+      selectedCurrency = value;
+      getData();
+      getdataETH();
+      getdataLTC();
+    });
+    });
+  }
+
+  CupertinoPicker iOSPicker(){
+    List<Text> pickerItems = [];
+    for(String currency in currenciesList){
+      pickerItems.add(Text(currency));
+    }
+
+    return CupertinoPicker(
+      itemExtent: 32.0,
+      onSelectedItemChanged: (selectedIndex) {print(selectedIndex);},
+      children: pickerItems,
+    );
+  }
+
+  Widget getPicker(){
+    if (Platform.isIOS) {
+      return iOSPicker();
+    }  else if(Platform.isAndroid){
+      return androidDropdown();
+    }
+  }
+
+  String bitcoinValue = '?';
+
+  void getData ()async{
+    try {
+      double coinRate = await CoinData().getCoinData(selectedCurrency);
+      setState((){
+        bitcoinValue = coinRate.toStringAsFixed(0);
+        print(bitcoinValue);
+      });
+    } catch (e){
+      print(e);
+    }
+  }
+
+  String ethValue = '?';
+
+  void getdataETH ()async{
+    try{
+      double coinRateETH = await CoinData().getCoinDataETH(selectedCurrency);
+      setState((){
+        ethValue = coinRateETH.toStringAsFixed(0);
+        print(coinRateETH);
+      });
+    } catch (e){
+      print(e);
+    }
+  }
+String ltcValue = '?';
+
+  void getdataLTC ()async {
+   try {
+      double coinRateLTC = await CoinData().getCoinDataLTC(selectedCurrency);
+      setState(() {
+        ltcValue = coinRateLTC.toStringAsFixed(0);
+        print(coinRateLTC);
+      });
+    } catch(e){print(e);}
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getData();
+    getdataETH();
+  }
+  
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,7 +129,7 @@ class _PriceScreenState extends State<PriceScreen> {
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
                 child: Text(
-                  '1 BTC = ? USD',
+                  '1 BTC = $bitcoinValue $selectedCurrency',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 20.0,
@@ -37,12 +139,55 @@ class _PriceScreenState extends State<PriceScreen> {
               ),
             ),
           ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0),
+            child: Card(
+              color: Colors.lightBlueAccent,
+              elevation: 5.0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
+                child: Text(
+                  '1 ETH = $ethValue $selectedCurrency',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0),
+            child: Card(
+              color: Colors.lightBlueAccent,
+              elevation: 5.0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
+                child: Text(
+                  '1 LTC = $ltcValue $selectedCurrency',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
           Container(
             height: 150.0,
             alignment: Alignment.center,
             padding: EdgeInsets.only(bottom: 30.0),
             color: Colors.lightBlue,
-            child: null,
+            child: getPicker(),
           ),
         ],
       ),
